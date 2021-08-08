@@ -2,12 +2,15 @@ package cn.gzten.springboot.jwt.service.impl;
 
 import cn.gzten.springboot.jwt.domain.User;
 import cn.gzten.springboot.jwt.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -19,6 +22,8 @@ import java.util.List;
  */
 @Service
 public class UserDetailsServiceImpl implements ReactiveUserDetailsService {
+    private static final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
+
     private UserRepository userRepository;
 
     @Override
