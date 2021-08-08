@@ -39,6 +39,7 @@ public class JwtController {
 
     private JwtUtils jwtUtils;
     private static final List<String> EMPTY_HEADER = List.of("");
+    private static final Exception EMPTY_EXCEPTION = new Exception();
 
     @PostConstruct
     public void initJwtUtils() {
@@ -52,25 +53,34 @@ public class JwtController {
                                     @JsonProperty("username") String username,
                                     @JsonProperty("password") String password){};
 
-    @PostMapping(value = "/oauth/token", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    @PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public Mono<JwtDto> generateJwt(ServerWebExchange exchange) {
-        return getJwtRequest(exchange).flatMap(jwtRequest -> {
-            if (jwtRequest.grantType == null || !jwtRequest.grantType.toLowerCase(Locale.ROOT).equals("password")) {
-                return Mono.error(new JWTCreationException("Unknown grant_type provided: " + jwtRequest.grantType, new Exception()));
-            }
+        return getJwtRequest(exchange).flatMap(jwtRequest -> generateJwt(jwtRequest));
+    }
 
-            log.info("Request token: {}", jwtRequest.username);
-            return userDetailsService.findByUsername(jwtRequest.username)
-                    .map(userDetails -> {
-                        if (passwordEncoder.matches(jwtRequest.password, userDetails.getPassword())) {
-                            log.info("Got token for: {}", jwtRequest.username);
-                            return jwtUtils.encrypt(jwtRequest.username);
-                        } else {
-                            log.info("Password incorrect for: {}", jwtRequest.username);
-                            throw new UsernameNotFoundException("User not found or password incorrect!");
-                        }
-                    });
-        });
+    @PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<JwtDto> generateJwt(@RequestBody JwtRequest jwtRequest) {
+        if (jwtRequest.grantType == null || jwtRequest.grantType == "" || !jwtRequest.grantType.toLowerCase(Locale.ROOT).equals("password")) {
+            return Mono.error(new JWTCreationException("Unknown grant_type provided: " + jwtRequest.grantType, EMPTY_EXCEPTION));
+        }
+        if (jwtRequest.username == null || jwtRequest.username == "") {
+            return Mono.error(new JWTCreationException("Please input username!", EMPTY_EXCEPTION));
+        }
+        if (jwtRequest.password == null || jwtRequest.password == "") {
+            return Mono.error(new JWTCreationException("Please input password!", EMPTY_EXCEPTION));
+        }
+
+        log.info("Request token: {}", jwtRequest.username);
+        return userDetailsService.findByUsername(jwtRequest.username)
+                .map(userDetails -> {
+                    if (passwordEncoder.matches(jwtRequest.password, userDetails.getPassword())) {
+                        log.info("Got token for: {}", jwtRequest.username);
+                        return jwtUtils.encrypt(jwtRequest.username);
+                    } else {
+                        log.info("Password incorrect for: {}", jwtRequest.username);
+                        throw new UsernameNotFoundException("User not found or password incorrect!");
+                    }
+                });
     }
 
     @Autowired
