@@ -18,7 +18,7 @@ public class SecurityConfig {
         return http.authorizeExchange()
                 .pathMatchers("/admin")
                 .hasAuthority("ROLE_ADMIN")
-                .pathMatchers("/oauth/token", "/health", "/test")
+                .pathMatchers("/oauth/token", "/health", "/test", "/test/*")
                 .permitAll()
                 .anyExchange()
                 .authenticated()
