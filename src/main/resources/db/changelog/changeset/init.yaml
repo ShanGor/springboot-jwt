@@ -41,11 +41,3 @@ databaseChangeLog:
                   user_id bigint NOT NULL,
                   role_id bigint NOT NULL
                 );"
-  - changeSet:
-      id: create_random_city
-      author: Samuel Chan
-      changes:
-        - sql: "CREATE TABLE random_city (
-                  id SERIAL primary key,
-                  name varchar(255) DEFAULT NULL
-                );"
