@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_app_role
+      author: Samuel Chan
+      changes:
+        - createTable:
+            tableName: app_role
+            columns:
+              - column:
+                  name: id
+                  type: SERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: role_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+  - changeSet:
+      id: create_app_user
+      author: Samuel Chan
+      changes:
+        - sql: "CREATE TABLE app_user (
+                  id SERIAL primary key,
+                  first_name varchar(255) NOT NULL,
+                  last_name varchar(255) NOT NULL,
+                  password varchar(255) NOT NULL,
+                  username varchar(255) NOT NULL
+                );"
+  - changeSet:
+      id: create_user_role
+      author: Samuel Chan
+      changes:
+        - sql: "CREATE TABLE user_role (
+                  user_id bigint NOT NULL,
+                  role_id bigint NOT NULL
+                );"
+  - changeSet:
+      id: create_random_city
+      author: Samuel Chan
+      changes:
+        - sql: "CREATE TABLE random_city (
+                  id SERIAL primary key,
+                  name varchar(255) DEFAULT NULL
+                );"

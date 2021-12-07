@@ -24,6 +24,7 @@ spring:
       ddl-auto: none
   sql:
     init:
+      mode: always
       platform: h2
 
 
