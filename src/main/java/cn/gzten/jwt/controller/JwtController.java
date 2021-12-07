@@ -1,6 +1,7 @@
 package cn.gzten.jwt.controller;
 
 import cn.gzten.jwt.dto.JwtDto;
+import cn.gzten.jwt.dto.JwtPayload;
 import cn.gzten.jwt.util.JwtUtils;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -29,13 +31,13 @@ public class JwtController {
     private PasswordEncoder passwordEncoder;
 
     @Value("${jwt.public-key-base64}")
-    private String publicKeyBase64;
+    String publicKeyBase64;
     @Value("${jwt.keystore.base64}")
-    private String privateKeystoreBase64;
+    String privateKeystoreBase64;
     @Value("${jwt.keystore.passcode}")
-    private String keystorePass;
+    String keystorePass;
     @Value("${jwt.keystore.alias}")
-    private String keyAlias;
+    String keyAlias;
 
     private JwtUtils jwtUtils;
     private static final List<String> EMPTY_HEADER = List.of("");
@@ -60,13 +62,14 @@ public class JwtController {
 
     @PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<JwtDto> generateJwt(@RequestBody JwtRequest jwtRequest) {
-        if (jwtRequest.grantType == null || jwtRequest.grantType == "" || !jwtRequest.grantType.toLowerCase(Locale.ROOT).equals("password")) {
+
+        if (!StringUtils.hasLength(jwtRequest.grantType) || !jwtRequest.grantType.toLowerCase(Locale.ROOT).equals("password")) {
             return Mono.error(new JWTCreationException("Unknown grant_type provided: " + jwtRequest.grantType, EMPTY_EXCEPTION));
         }
-        if (jwtRequest.username == null || jwtRequest.username == "") {
+        if (!StringUtils.hasLength(jwtRequest.username)) {
             return Mono.error(new JWTCreationException("Please input username!", EMPTY_EXCEPTION));
         }
-        if (jwtRequest.password == null || jwtRequest.password == "") {
+        if (!StringUtils.hasLength(jwtRequest.password)) {
             return Mono.error(new JWTCreationException("Please input password!", EMPTY_EXCEPTION));
         }
 
@@ -75,7 +78,7 @@ public class JwtController {
                 .map(userDetails -> {
                     if (passwordEncoder.matches(jwtRequest.password, userDetails.getPassword())) {
                         log.info("Got token for: {}", jwtRequest.username);
-                        return jwtUtils.encrypt(jwtRequest.username);
+                        return jwtUtils.encrypt(new JwtPayload(jwtRequest.username, userDetails.getAuthorities()).toString());
                     } else {
                         log.info("Password incorrect for: {}", jwtRequest.username);
                         throw new UsernameNotFoundException("User not found or password incorrect!");

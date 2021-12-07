@@ -57,7 +57,7 @@ public class JwtUtils {
     public String encrypt(String claim, String jti, long expiresIn) {
         String token = JWT.create()
                 .withExpiresAt(new Date(System.currentTimeMillis() + expiresIn * 1000))
-                .withClaim("claimsInComma", claim)
+                .withClaim("claimsInJson", claim)
                 .withJWTId(jti)
                 .sign(algorithmForEncryption);
 
