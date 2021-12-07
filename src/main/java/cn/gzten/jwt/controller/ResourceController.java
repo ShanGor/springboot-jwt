@@ -13,10 +13,14 @@ import java.util.List;
  * Created by nydiarra on 06/05/17.
  */
 @RestController
-@RequestMapping("/springjwt")
 public class ResourceController {
     @Autowired
     GenericService userService;
+
+    @RequestMapping(value ="/admin/users", method = RequestMethod.GET)
+    public List<User> getAdminUsers(){
+        return userService.findAllUsers();
+    }
 
     @RequestMapping(value ="/users", method = RequestMethod.GET)
     public List<User> getUsers(){

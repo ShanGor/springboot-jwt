@@ -1,12 +1,14 @@
-package cn.gzten.jwt.util;
+package cn.gzten.jwt.service;
 
 import cn.gzten.jwt.dto.JwtDto;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.*;
@@ -22,17 +24,25 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
-public class JwtUtils {
+@Service
+public class JwtService {
     private Algorithm algorithmForEncryption;
     private Algorithm algorithmForDecrypt;
     static final long EXPIRY_SECONDS = 300;
 
-    public JwtUtils(String privateKeyBase64,
-                    String keystorePass,
-                    String keyAlias,
-                    String publicKeyBase64) throws JWTCreationException {
+    @Value("${jwt.public-key-base64}")
+    String publicKeyBase64;
+    @Value("${jwt.keystore.base64}")
+    String privateKeystoreBase64;
+    @Value("${jwt.keystore.passcode}")
+    String keystorePass;
+    @Value("${jwt.keystore.alias}")
+    String keyAlias;
+
+    @PostConstruct
+    public void init() {
         try {
-            var ins = new ByteArrayInputStream(Base64.getDecoder().decode(privateKeyBase64));
+            var ins = new ByteArrayInputStream(Base64.getDecoder().decode(privateKeystoreBase64));
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(ins, keystorePass.toCharArray());
             Key key = keyStore.getKey(keyAlias, keystorePass.toCharArray());
@@ -53,6 +63,16 @@ public class JwtUtils {
             throw new JWTCreationException("Error in JwtUtils", e);
         }
     }
+
+    public JwtService(String privateKeystoreBase64, String publicKeyBase64, String keyAlias, String keystorePass) throws JWTCreationException {
+        this.privateKeystoreBase64 = privateKeystoreBase64;
+        this.publicKeyBase64 = publicKeyBase64;
+        this.keyAlias = keyAlias;
+        this.keystorePass = keystorePass;
+        init();
+    }
+
+    public JwtService() {}
 
     public String encrypt(String claim, String jti, long expiresIn) {
         String token = JWT.create()
@@ -80,15 +100,10 @@ public class JwtUtils {
      * @return
      */
     public boolean isValid(String token) {
-        try {
-            JWTVerifier verifier = JWT.require(algorithmForDecrypt)
-                    .build(); //Reusable verifier instance
-            verifier.verify(token);
-            return true;
-        } catch (JWTVerificationException e){
-            e.printStackTrace();
-            return false;
-        }
+        JWTVerifier verifier = JWT.require(algorithmForDecrypt)
+                .build(); //Reusable verifier instance
+        verifier.verify(token);
+        return true;
     }
 
 }

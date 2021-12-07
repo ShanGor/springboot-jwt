@@ -1,12 +1,12 @@
 package cn.gzten.jwt.dto;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * It is for the `claim` part for the JWT.
@@ -39,8 +39,18 @@ public class JwtPayload {
         this.roles.add(role);
     }
 
-    public static final JwtPayload fromJson(String json) throws JsonProcessingException {
+    public static final JwtPayload fromJson(final String json) throws JsonProcessingException {
         return objectMapper.readValue(json, JwtPayload.class);
+    }
+
+    public static final JwtPayload fromToken(final String token) {
+        String payload = JWT.decode(token).getPayload();
+        try {
+            var o = objectMapper.readValue(new String(Base64.getDecoder().decode(payload)), LinkedHashMap.class);
+            return fromJson((String) o.get("claimsInJson"));
+        } catch (JsonProcessingException e) {
+            throw new JWTDecodeException("Failed to process the payload!", e);
+        }
     }
 
     @Override

@@ -21,9 +21,15 @@ public class AppExceptionHandler {
                 .body(new ErrorResponse("E001", "Username or password incorrect!"));
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(value = JWTCreationException.class)
     public ResponseEntity<ErrorResponse> handleTokenGenerationErrors(JWTCreationException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("E002", e.getMessage()));
+    }
+
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleGeneralErrors(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("E003", e.getMessage()));
     }
 }

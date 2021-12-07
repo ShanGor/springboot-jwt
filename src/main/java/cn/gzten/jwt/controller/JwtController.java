@@ -2,14 +2,14 @@ package cn.gzten.jwt.controller;
 
 import cn.gzten.jwt.dto.JwtDto;
 import cn.gzten.jwt.dto.JwtPayload;
-import cn.gzten.jwt.util.JwtUtils;
+import cn.gzten.jwt.service.JwtService;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,26 +30,11 @@ public class JwtController {
     private ReactiveUserDetailsService userDetailsService;
     private PasswordEncoder passwordEncoder;
 
-    @Value("${jwt.public-key-base64}")
-    String publicKeyBase64;
-    @Value("${jwt.keystore.base64}")
-    String privateKeystoreBase64;
-    @Value("${jwt.keystore.passcode}")
-    String keystorePass;
-    @Value("${jwt.keystore.alias}")
-    String keyAlias;
+    @Autowired
+    JwtService jwtService;
 
-    private JwtUtils jwtUtils;
     private static final List<String> EMPTY_HEADER = List.of("");
     private static final Exception EMPTY_EXCEPTION = new Exception();
-
-    @PostConstruct
-    public void initJwtUtils() {
-        this.jwtUtils = new JwtUtils(privateKeystoreBase64,
-                keystorePass,
-                keyAlias,
-                publicKeyBase64);
-    }
 
     public static record JwtRequest(@JsonProperty("grant_type") String grantType,
                                     @JsonProperty("username") String username,
@@ -78,7 +63,7 @@ public class JwtController {
                 .map(userDetails -> {
                     if (passwordEncoder.matches(jwtRequest.password, userDetails.getPassword())) {
                         log.info("Got token for: {}", jwtRequest.username);
-                        return jwtUtils.encrypt(new JwtPayload(jwtRequest.username, userDetails.getAuthorities()).toString());
+                        return jwtService.encrypt(new JwtPayload(jwtRequest.username, userDetails.getAuthorities()).toString());
                     } else {
                         log.info("Password incorrect for: {}", jwtRequest.username);
                         throw new UsernameNotFoundException("User not found or password incorrect!");
