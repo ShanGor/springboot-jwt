@@ -2,6 +2,7 @@ package cn.gzten.jwt.exception;
 
 import cn.gzten.jwt.dto.ErrorResponse;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,6 +24,12 @@ public class AppExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleTokenGenerationErrors(JWTCreationException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("E002", e.getMessage()));
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleTokenGenerationErrors(JWTVerificationException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("E002", e.getMessage()));
     }

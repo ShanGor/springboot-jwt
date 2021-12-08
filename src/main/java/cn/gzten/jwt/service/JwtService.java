@@ -65,6 +65,7 @@ public class JwtService {
     }
 
     public JwtService(String privateKeystoreBase64, String publicKeyBase64, String keyAlias, String keystorePass) throws JWTCreationException {
+        this();
         this.privateKeystoreBase64 = privateKeystoreBase64;
         this.publicKeyBase64 = publicKeyBase64;
         this.keyAlias = keyAlias;
@@ -72,6 +73,9 @@ public class JwtService {
         init();
     }
 
+    /**
+     * You gotta keep this, otherwise will fail
+     */
     public JwtService() {}
 
     public String encrypt(String claim, String jti, long expiresIn) {

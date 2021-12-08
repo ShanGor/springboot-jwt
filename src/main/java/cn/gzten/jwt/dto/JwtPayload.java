@@ -1,9 +1,12 @@
 package cn.gzten.jwt.dto;
 
+import cn.gzten.jwt.exception.AppException;
+import cn.gzten.util.JsonUtil;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.*;
@@ -12,11 +15,15 @@ import java.util.*;
  * It is for the `claim` part for the JWT.
  */
 public class JwtPayload {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
+    @Getter
+    @Setter
     private String username;
+
+    @Getter
+    @Setter
     private String id;
 
+    @Getter
     private List<String> roles;
 
     public JwtPayload() {
@@ -42,13 +49,13 @@ public class JwtPayload {
     }
 
     public static final JwtPayload fromJson(final String json) throws JsonProcessingException {
-        return objectMapper.readValue(json, JwtPayload.class);
+        return JsonUtil.getObjectMapper().readValue(json, JwtPayload.class);
     }
 
     public static final JwtPayload fromToken(final String token) {
         String payload = JWT.decode(token).getPayload();
         try {
-            var o = objectMapper.readValue(new String(Base64.getDecoder().decode(payload)), LinkedHashMap.class);
+            var o = JsonUtil.getObjectMapper().readValue(new String(Base64.getDecoder().decode(payload)), LinkedHashMap.class);
             return fromJson((String) o.get("claimsInJson"));
         } catch (JsonProcessingException e) {
             throw new JWTDecodeException("Failed to process the payload!", e);
@@ -58,33 +65,14 @@ public class JwtPayload {
     @Override
     public String toString() {
         try {
-            return objectMapper.writeValueAsString(this);
+            return JsonUtil.toString(this);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new AppException(400, e.toString());
         }
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public List<String> getRoles() {
-        return roles;
     }
 
     public void setRoles(List<String> roles) {
         roles.forEach(role -> this.roles.add(role));
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 }

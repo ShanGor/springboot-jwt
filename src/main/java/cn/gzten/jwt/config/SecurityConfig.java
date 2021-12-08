@@ -3,15 +3,12 @@ package cn.gzten.jwt.config;
 import cn.gzten.jwt.dto.JwtPayload;
 import cn.gzten.jwt.service.JwtService;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferWrapper;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.ReactiveAuthenticationManagerResolver;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -112,11 +109,16 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    static class JwtAuthentication implements Authentication {
+    public static class JwtAuthentication implements Authentication {
+        @Setter @Getter
         private boolean authenticated = false;
+        @Getter @Setter
         private String credentials;
+        @Setter
         private String details;
+        @Setter @Getter
         private String principal;
+        @Setter @Getter
         private String name;
         List<GrantedAuthority> authorities = new LinkedList<>();
 
@@ -130,54 +132,14 @@ public class SecurityConfig {
         }
 
         @Override
-        public Object getCredentials() {
-            return credentials;
-        }
-        public void setCredentials(String credentials) {
-            this.credentials = credentials;
-        }
-
-        @Override
         public Object getDetails() {
             return details;
-        }
-
-        public void setDetails(String details) {
-            this.details = details;
-        }
-
-        @Override
-        public Object getPrincipal() {
-            return principal;
-        }
-
-        public void setPrincipal(String principal) {
-            this.principal = principal;
-        }
-
-        @Override
-        public boolean isAuthenticated() {
-            return authenticated;
-        }
-
-        @Override
-        public void setAuthenticated(boolean authenticated) throws IllegalArgumentException {
-            this.authenticated = authenticated;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
         }
     }
 
     private static final String BEARER = "Bearer ";
 
-    static class JwtAuthenticationConverter implements ServerAuthenticationConverter {
+    private static class JwtAuthenticationConverter implements ServerAuthenticationConverter {
         JwtService jwtService;
         public JwtAuthenticationConverter(JwtService jwtService) {
             this.jwtService = jwtService;
