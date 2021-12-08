@@ -28,7 +28,7 @@ import java.util.UUID;
 public class JwtService {
     private Algorithm algorithmForEncryption;
     private Algorithm algorithmForDecrypt;
-    static final long EXPIRY_SECONDS = 300;
+    static final long EXPIRY_SECONDS = 60 * 24 * 7L;
 
     @Value("${jwt.public-key-base64}")
     String publicKeyBase64;

@@ -1,4 +1,4 @@
-package cn.gzten.jwt.controller;
+package cn.gzten.jwt.exception;
 
 import cn.gzten.jwt.dto.ErrorResponse;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -21,15 +21,15 @@ public class AppExceptionHandler {
                 .body(new ErrorResponse("E001", "Username or password incorrect!"));
     }
 
-    @ExceptionHandler(value = JWTCreationException.class)
+    @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleTokenGenerationErrors(JWTCreationException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("E002", e.getMessage()));
     }
 
-    @ExceptionHandler(value = RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleGeneralErrors(RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleGAppException(AppException e) {
+        return ResponseEntity.status(e.getHttpStatusCode())
                 .body(new ErrorResponse("E003", e.getMessage()));
     }
 }

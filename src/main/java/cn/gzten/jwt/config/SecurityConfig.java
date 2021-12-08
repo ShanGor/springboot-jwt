@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import static cn.gzten.jwt.domain.Role.ROLE_ADMIN;
+
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
@@ -71,7 +73,7 @@ public class SecurityConfig {
                 .exceptionHandling().accessDeniedHandler(accessDeniedHandler)
                 .and()
                 .authorizeExchange()
-                .pathMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                .pathMatchers("/admin/**").hasAuthority(ROLE_ADMIN)
                 .anyExchange()
                 .authenticated()
                 .and()
