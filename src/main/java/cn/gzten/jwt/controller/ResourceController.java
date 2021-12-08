@@ -2,26 +2,20 @@ package cn.gzten.jwt.controller;
 
 import cn.gzten.jwt.exception.AppException;
 import cn.gzten.jwt.repository.UserRepository;
-import cn.gzten.jwt.service.GenericService;
 import cn.gzten.jwt.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.nio.file.AccessDeniedException;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static cn.gzten.jwt.domain.Role.ROLE_ADMIN;
 
 /**
  * Created by nydiarra on 06/05/17.
+ * Refactored by Samuel Chan at 8th Dec 2021.
  */
 @RestController
 public class ResourceController {
@@ -40,7 +34,7 @@ public class ResourceController {
         return checkAuthorityAndReturn(ou, () -> Mono.justOrEmpty(ou));
     }
 
-    public <R> Mono<R> checkAuthorityAndReturn(Optional<User> ou, Supplier<Mono<R>> function) {
+    public static final  <R> Mono<R> checkAuthorityAndReturn(final Optional<User> ou, final Supplier<Mono<R>> function) {
         return ReactiveSecurityContextHolder.getContext().flatMap(sc -> {
             if (sc.getAuthentication().getAuthorities().contains(ROLE_ADMIN)) {
                 return function.get();
