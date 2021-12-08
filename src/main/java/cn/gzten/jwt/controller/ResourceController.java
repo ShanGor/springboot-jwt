@@ -28,6 +28,14 @@ public class ResourceController {
         return userRepo.findAll();
     }
 
+    /**
+     * The performance would be better if you use String to pass the id.
+     * When you are checking if a user has admin right to some specific object, you can:
+     *  - add authority like 'admin:{object id}' to the user role. E.G. 'admin:1234'
+     *  - Then it should hasAuthority('admin:' + #id)
+     * @param id
+     * @return
+     */
     @PreAuthorize("hasAuthority('" + ROLE_ADMIN + "') || #id == principal")
     @GetMapping(value ="/users/{id}")
     public Mono<User> getUser(@PathVariable("id") String id){

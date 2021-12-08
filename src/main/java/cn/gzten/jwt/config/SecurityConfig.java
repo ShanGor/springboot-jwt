@@ -1,13 +1,13 @@
 package cn.gzten.jwt.config;
 
 import cn.gzten.jwt.dto.JwtPayload;
+import cn.gzten.jwt.exception.MyAccessDeniedHandler;
 import cn.gzten.jwt.service.JwtService;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -16,18 +16,15 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
-import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,32 +39,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        var accessDeniedHandler = new ServerAccessDeniedHandler() {
-            @Override
-            public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException denied) {
-                var resp = exchange.getResponse();
-                resp.setRawStatusCode(403);
-
-                var mono = ReactiveSecurityContextHolder.getContext().map(ctx -> {
-                    var aut = ctx.getAuthentication();
-                    if (aut.isAuthenticated()) {
-                        return resp.bufferFactory().wrap("User is not authorized to this operation!".getBytes());
-                    } else {
-                        return resp.bufferFactory().wrap(aut.getDetails()
-                                .toString().getBytes(StandardCharsets.UTF_8));
-                    }
-
-                });
-                return resp.writeAndFlushWith(Mono.just(mono));
-            }
-        };
 
         return http.authorizeExchange()
                 .pathMatchers("/oauth/token", "/health", "/test", "/test/*")
                 .permitAll()
                 .and()
                 .addFilterAt(bearerAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
-                .exceptionHandling().accessDeniedHandler(accessDeniedHandler)
+                .exceptionHandling().accessDeniedHandler(new MyAccessDeniedHandler())
                 .and()
                 .authorizeExchange()
                 .pathMatchers("/admin/**").hasAuthority(ROLE_ADMIN)
