@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Entity
 @Table(name="app_role")
 public class Role {
-    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String ROLE_ADMIN = "ADMIN_USER";
 
     private static final long serialVersionUID = 1L;
     @Id

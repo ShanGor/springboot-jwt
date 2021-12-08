@@ -178,15 +178,14 @@ public class SecurityConfig {
     private static final String BEARER = "Bearer ";
 
     static class JwtAuthenticationConverter implements ServerAuthenticationConverter {
-        JwtAuthentication authentication;
         JwtService jwtService;
         public JwtAuthenticationConverter(JwtService jwtService) {
-            authentication = new JwtAuthentication();
             this.jwtService = jwtService;
         }
 
         @Override
         public Mono<Authentication> convert(ServerWebExchange exchange) {
+            JwtAuthentication authentication = new JwtAuthentication();
             var auths = exchange.getRequest().getHeaders().get("Authorization");
             if (auths == null || auths.isEmpty()) {
                 authentication.setAuthenticated(false);
@@ -201,7 +200,7 @@ public class SecurityConfig {
                             var payload = JwtPayload.fromToken(token);
                             authentication.setAuthenticated(true);
                             authentication.setName(payload.getUsername());
-                            authentication.setPrincipal(payload.getUsername());
+                            authentication.setPrincipal(payload.getId());
                             payload.getRoles().forEach(role -> authentication.addAuthority(role));
                         }
                     } catch (JWTVerificationException e) {

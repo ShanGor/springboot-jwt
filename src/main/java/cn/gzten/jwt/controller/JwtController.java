@@ -2,6 +2,7 @@ package cn.gzten.jwt.controller;
 
 import cn.gzten.jwt.dto.JwtDto;
 import cn.gzten.jwt.dto.JwtPayload;
+import cn.gzten.jwt.service.AppUserDetails;
 import cn.gzten.jwt.service.JwtService;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Locale;
 
@@ -61,9 +60,10 @@ public class JwtController {
         log.info("Request token: {}", jwtRequest.username);
         return userDetailsService.findByUsername(jwtRequest.username)
                 .map(userDetails -> {
+                    var ud = (AppUserDetails)userDetails;
                     if (passwordEncoder.matches(jwtRequest.password, userDetails.getPassword())) {
                         log.info("Got token for: {}", jwtRequest.username);
-                        return jwtService.encrypt(new JwtPayload(jwtRequest.username, userDetails.getAuthorities()).toString());
+                        return jwtService.encrypt(new JwtPayload(ud.getId(), jwtRequest.username, ud.getAuthorities()).toString());
                     } else {
                         log.info("Password incorrect for: {}", jwtRequest.username);
                         throw new UsernameNotFoundException("User not found or password incorrect!");

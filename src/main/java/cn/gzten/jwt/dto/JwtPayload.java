@@ -15,6 +15,7 @@ public class JwtPayload {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private String username;
+    private String id;
 
     private List<String> roles;
 
@@ -22,13 +23,14 @@ public class JwtPayload {
         roles = new LinkedList<>();
     }
 
-    public JwtPayload(String username) {
+    public JwtPayload(String id, String username) {
         this();
+        this.setId(id);
         this.setUsername(username);
     }
 
-    public JwtPayload(String username, Collection<? extends GrantedAuthority> authorities) {
-        this(username);
+    public JwtPayload(String id, String username, Collection<? extends GrantedAuthority> authorities) {
+        this(id, username);
 
         authorities.forEach(aut -> {
             this.addRole(aut.getAuthority());
@@ -76,5 +78,13 @@ public class JwtPayload {
 
     public void setRoles(List<String> roles) {
         roles.forEach(role -> this.roles.add(role));
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

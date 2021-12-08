@@ -16,8 +16,8 @@ public class JwtPayloadTest {
         l.add((GrantedAuthority) () -> "ADMIN");
         l.add((GrantedAuthority) () -> "NORMAL");
 
-        var str = new JwtPayload(username, l).toString();
-        assertEquals("{\"username\":\"samuel\",\"roles\":[\"ADMIN\",\"NORMAL\"]}", str);
+        var str = new JwtPayload("1", username, l).toString();
+        assertEquals("{\"username\":\"samuel\",\"id\":\"1\",\"roles\":[\"ADMIN\",\"NORMAL\"]}", str);
     }
 
     @Test

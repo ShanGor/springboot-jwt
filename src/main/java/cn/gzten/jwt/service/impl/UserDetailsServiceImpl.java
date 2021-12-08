@@ -2,6 +2,7 @@ package cn.gzten.jwt.service.impl;
 
 import cn.gzten.jwt.repository.UserRepository;
 import cn.gzten.jwt.domain.User;
+import cn.gzten.jwt.service.AppUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +39,7 @@ public class UserDetailsServiceImpl implements ReactiveUserDetailsService {
             authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
         });
 
-        UserDetails userDetails = new org.springframework.security.core.userdetails.
-                User(user.getUsername(), user.getPassword(), authorities);
-        org.springframework.security.core.userdetails.User.withUsername(user.getUsername())
-                .password(user.getPassword())
-                .authorities(authorities)
-                .build();
-
-        return Mono.just(userDetails);
+        return Mono.just(new AppUserDetails(String.valueOf(user.getId()), user.getUsername(), user.getPassword(), authorities));
     }
 
 
