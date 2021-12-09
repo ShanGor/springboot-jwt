@@ -15,7 +15,7 @@ public class Role {
     public static final String ROLE_STD = "STANDARD_USER";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(name="role_name")
