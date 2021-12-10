@@ -132,3 +132,10 @@ Use one of the several ways of running a Spring Boot application. Below are just
              }
            ]
            `
+
+# Reference
+Keystore generation with ECDSA:
+> keytool -genkeypair -keyalg EC -keysize 256 -alias my_key -keystore my_key.jks -storepass changeit -keypass changeit -validity 7300 -deststoretype pkcs12 -dname "CN=gzten.cn, OU=gzten.cn, O=GZ, C=CN" -v
+
+Export the public key:
+> keytool -exportcert -keystore my_key.jks -alias my_key -file my_key.cert
